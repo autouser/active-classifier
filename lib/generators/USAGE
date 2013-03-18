@@ -1,0 +1,6 @@
+Description:
+    Generates new Class model and ClassAttribute model.
+
+Example:
+    rails generate classify Item
+    rails generate classify Device Item
