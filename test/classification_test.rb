@@ -73,12 +73,12 @@ class ManitouClassificationTest < ActiveSupport::TestCase
     assert_equal(
       [
         ["id", "name", "type", "created_at", "updated_at"],
-        ["attr_for_telsey", ["id", "class_id", "mac"]],
-        ["attr_for_modem", ["id", "class_id", "num_of_ifs"]],
-        ["attr_for_device", ["id", "class_id", "vendor", "issued_at"]]
+        ["attr_for_telsey", ["mac"]],
+        ["attr_for_modem", ["num_of_ifs", "line"]],
+        ["attr_for_device", ["vendor", "issued_at"]]
       ],
       Telsey.fields_for_class,
-      "should return fieldnames"
+      "should return field names"
     )
   end
 

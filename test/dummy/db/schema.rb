@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(:version => 20130315083115) do
   create_table "modem_attributes", :force => true do |t|
     t.integer "class_id"
     t.integer "num_of_ifs"
+    t.integer "line",       :default => 1
   end
 
   create_table "telsey_attributes", :force => true do |t|

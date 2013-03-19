@@ -10,7 +10,8 @@ module Classify
       @classified = clsf
       self.inheritance_queue do |cls, at|
         if at
-          self.has_one "attr_for_#{cls.to_s.underscore}".to_sym, :class_name => "#{cls.to_s}Attribute", :foreign_key => 'class_id', :dependent => :destroy
+          attr_accessible *self.field_names_for_class.collect{|a| a.to_sym}
+          self.has_one "attr_for_#{cls.to_s.underscore}".to_sym, :class_name => "#{cls.to_s}Attribute", :foreign_key => 'class_id', :dependent => :destroy, :autosave => true
         end
       end
     end
@@ -59,20 +60,54 @@ module Classify
       return nil
     end
 
+    def relation_for_field(field_name)
+      self.inheritance_queue do |cls, at|
+        return cls.cls_relation if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
+      end
+      return nil
+    end
+
+
+    def field_names_for_class
+      flds = []
+      self.inheritance_queue do |cls, at|
+          flds.push(cls.column_names)
+          flds.push([cls.cls_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id'}]) if at
+      end
+      return flds.flatten.uniq
+    end
+
     def fields_for_class
       shared = []
       flds = []
       self.inheritance_queue do |cls, at|
           shared = (shared+cls.column_names).uniq
-          flds.push([cls.cls_relation, cls.attributes_class.column_names]) if at
+          flds.push([cls.cls_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id' }]) if at
       end
       return flds.unshift(shared)
     end
 
-    def includes_class
+    def include_class
       
     end
 
+  end
+
+  def method_missing(method_name, *args, &block)
+    match_data = method_name.to_s.match(/^(\w+)(|=)$/)
+    if match_data && rel = self.class.relation_for_field(match_data[1])
+      attrs = self.send(rel) || self.send("build_#{rel}")
+      raise "#{rel} was not built" if attrs.nil?
+      attrs.send(method_name, *args)
+    else
+      super(method_name, *args, &block)
+    end
+  end
+
+  def respond_to?(name, *args)
+    name.to_s =~ /^(\w+)(|=)$/
+    return true if self.class.field_names_for_class.include?($1)
+    super(name, *args)
   end
 
 end
