@@ -1,0 +1,13 @@
+class Create<%= class_name.camelize %> < ActiveRecord::Migration
+  def change
+    create_table(:<%= class_name.underscore.gsub('/','_').pluralize %>) do |t|
+
+<% @class_attributes.each do |attribute| %>
+      t.<%= attribute[:type] || 'string' %> :<%= attribute[:name] -%>
+<% end %>
+
+      t.timestamps
+    end
+
+  end
+end

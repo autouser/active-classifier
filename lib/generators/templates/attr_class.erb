@@ -1,0 +1,11 @@
+class <%= class_name.camelize %>Attribute < ActiveRecord::Base
+
+  include AttributeFor
+
+  <% unless @additional_attributes.empty? %>
+  attr_accesible <%= @additional_attributes.collect{|a| ":#{a[:name]}"}.join(', ') -%>
+  <% end %>
+
+  attribute_for
+
+end
