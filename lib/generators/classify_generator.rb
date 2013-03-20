@@ -1,11 +1,9 @@
 require 'rails/generators/active_record'
 require 'rails/generators/migration'
-require 'pp'
+
 class ClassifyGenerator < Rails::Generators::Base
 
-  # include Rails::Generators::ActiveRecord
   include Rails::Generators::Migration
-  # include Rails::Generators::ResourceHelpers
 
   source_root File.expand_path('../templates', __FILE__)
 
@@ -45,8 +43,6 @@ class ClassifyGenerator < Rails::Generators::Base
   end
 
   def classify
-    pp @class_attributes
-    pp @additional_attributes
     template "class.erb", "app/models/#{class_name.underscore}.rb"
     migration_template "class_migration.erb", "db/migrate/create_#{class_name.underscore.gsub('/','_').pluralize}"
     template "attr_class.erb", "app/models/#{class_name.underscore}_attribute.rb"
