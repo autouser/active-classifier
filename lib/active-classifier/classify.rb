@@ -44,11 +44,11 @@ module Classify
       end
     end
 
-    def all_relations
-      self.inheritance_array.collect {|cls| cls.cls_relation}.compact
+    def all_class_relations
+      self.inheritance_array.collect {|cls| cls.class_relation}.compact
     end
 
-    def cls_relation
+    def class_relation
       self.classified? ? "attr_for_#{self.to_s.underscore}".to_s : nil
     end
 
@@ -62,7 +62,7 @@ module Classify
 
     def relation_for_field(field_name)
       self.inheritance_queue do |cls, at|
-        return cls.cls_relation if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
+        return cls.class_relation if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
       end
       return nil
     end
@@ -72,7 +72,7 @@ module Classify
       flds = []
       self.inheritance_queue do |cls, at|
           flds.push(cls.column_names)
-          flds.push([cls.cls_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id'}]) if at
+          flds.push([cls.class_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id'}]) if at
       end
       return flds.flatten.uniq
     end
@@ -82,13 +82,13 @@ module Classify
       flds = []
       self.inheritance_queue do |cls, at|
           shared = (shared+cls.column_names).uniq
-          flds.push([cls.cls_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id' }]) if at
+          flds.push([cls.class_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id' }]) if at
       end
       return flds.unshift(shared)
     end
 
     def includes_class
-      self.includes(*self.all_relations.collect{|r| r.to_sym})
+      self.includes(*self.all_class_relations.collect{|r| r.to_sym})
     end
 
   end
