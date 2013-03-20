@@ -87,8 +87,8 @@ module Classify
       return flds.unshift(shared)
     end
 
-    def include_class
-      
+    def includes_class
+      self.includes(*self.all_relations.collect{|r| r.to_sym})
     end
 
   end

@@ -78,8 +78,32 @@ class ManitouClassificationTest < ActiveSupport::TestCase
         ["attr_for_device", ["vendor", "issued_at"]]
       ],
       Telsey.fields_for_class,
-      "should return field names"
+      "should return fields structure"
     )
+  end
+
+  test "field_names_for_class" do
+    assert_equal ["id", "name", "type", "created_at", "updated_at", "attr_for_telsey", "mac",
+      "attr_for_modem", "num_of_ifs", "line", "attr_for_device", "vendor", "issued_at"],
+      Telsey.field_names_for_class, "should return field names"
+  end
+
+  test "create with direct inherited attributes" do
+    Telsey.create! :name => 'modem1'
+    modem = Telsey.first
+    assert_equal 'modem1', modem.name, "should set direct inherited attribute name"
+    assert modem.attr_for_device.nil?, "attr_for_device should be nil"
+    assert modem.attr_for_modem.nil?, "attr_for_device should be nil"
+    assert modem.attr_for_telsey.nil?, "attr_for_device should be nil"
+  end
+
+  test "create with additional attributes" do
+    Telsey.create! :name => 'modem1', :mac => '00:00:00:00:00:00', :vendor => 'Telsey S.r.I'
+    modem = Telsey.first
+    assert_equal 'modem1', modem.name, "should set direct inherited attribute name"
+    assert_equal 'Telsey S.r.I', modem.vendor, "should return additional attribute from attr_for_device"
+    assert modem.attr_for_modem.nil?, "attr_for_device should be nil"
+    assert_equal '00:00:00:00:00:00', modem.mac, "should return additional attribute from attr_for_telsey"
   end
 
 end
