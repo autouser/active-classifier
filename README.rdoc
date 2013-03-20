@@ -1,3 +1,28 @@
 = ActiveClassifier
 
-This project rocks and uses MIT-LICENSE.
+ActiveClassifier is a rails plugin that provides ActiveRecord Single Table Inheritance in more flexible way.
+
+Imagine that you need to store class hierarchy in a database. The usual way is:
+
+- create root model class,
+- create migration with 'type' field,
+- inherit another classes from root class.
+
+E.g:
+
+  Device
+    Modem
+      ModemType1
+      ModemType2
+    Switch
+  ...
+
+But what if Modem has an additional attributes which Device hasn't? And what if Switch has different set of attributes?
+
+You can store all of them in the same 'devices' table or add some relations for subclasses which will store attributes into separate tables.
+
+The first way will lead to the main table growing, some fields will never contain values.
+The second way is preferrable but you may be confused with an associations.
+
+ActiveClassifier provides assistance in additional attributes organization.
+

@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     active-classifier (0.0.1)
+      activerecord (~> 3.2.12)
       rails (~> 3.2.12)
 
 GEM
