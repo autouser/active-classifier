@@ -1,6 +1,6 @@
 = ActiveClassifier
 
-ActiveClassifier is a rails plugin that provides ActiveRecord Single Table Inheritance in more flexible way.
+ActiveClassifier is a rails plugin that provides ActiveRecord Single Table Inheritance in a more flexible way.
 
 Imagine that you need to store class hierarchy in a database. The usual way is:
 
@@ -22,7 +22,176 @@ But what if Modem has an additional attributes which Device hasn't? And what if 
 You can store all of them in the same 'devices' table or add some relations for subclasses which will store attributes into separate tables.
 
 The first way will lead to the main table growing, some fields will never contain values.
-The second way is preferrable but you may be confused with an associations.
+The second way is preferable but you may be confused with an associations.
 
-ActiveClassifier provides assistance in additional attributes organization.
+ActiveClassifier provides an assistance in additional attributes organization.
 
+== Class tree
+
+When you develop your application based on ActiveClassifier you shall design a class tree before.
+
+E.g:
+
+  class Device < ActiveRecord::Base
+
+  end
+
+  class Modem < Device
+
+  end
+
+  class Switch < Device
+
+  end
+
+  class ModemType1 < Modem
+
+  end
+  ...
+
+The migration looks like:
+
+  class CreateDevices < ActiveRecord::Migration
+    def change
+      create_table :devices do |t|
+        t.string :vendor
+        t.string :type
+
+        t.timestamps
+      end
+    end
+  end
+
+This is the classic STI. Now all subclasses of the Device class will have access to _vendor_ field in the _devices_ table.
+
+Each node in the class tree might have additional attributes model.
+
+  class Modem < Device
+
+  end
+
+  class ModemAttribute < ActiveRecord::Base
+    belongs_to :modem, :class_name => 'Modem', :foreign_key => 'class_id'
+  end
+
+  class CreateModemAttributes < ActiveRecord::Migration
+    def change
+      create_table :modem_attributes do |t|
+        t.integer :class_id
+        t.integer :num_of_ifs
+        t.integer :line, :default => 1
+      end
+    end
+  end
+
+
+To turn on ActiveClassifier behavior just add the helpers into the classes - _classify_ to the main classes and _attribute_for_ to the additional attribute classes.
+
+=== Namimg convention
+
+All additional attribute classes should have name [Class]Attribute.
+
+=== _classify_ method
+
+Should be included into class
+
+It have one boolean optional argument. Agrument specifies if the class have an additional arguments. Default: true.
+
+  class Device < ActiveRecord::Base
+    include Classify
+    classify false
+  end
+
+  class Modem < Device
+    include Classify
+    classify
+  end
+
+This helper adds into the class:
+
+- attr\_for\_classname relation for self and each ancestor what having an additional attributes. E.g: for ModemType1 attr_for_modem_type1, attr_for_modem but not attr_for_device,
+
+- some class and instance methods,
+
+- ability to access additional attributes as its own.
+
+=== _attribute_for_ method
+
+Should be included into the additional attributes class
+
+  class ModemAttribute < ActiveRecord::Base
+    include AttributeFor
+    attribute_for
+  end
+
+This helper adds _foreign_class_ relation pointed to the main class
+
+=== generator
+
+You can use _classify_ generator to create class tree
+ 
+To generate a classified root class without additional attributes:
+
+  rails generate classify Device vendor:string --classify=false
+
+To generate a classified subclass with additional attributes:
+
+  rails generate classify Modem attr:num_of_ifs:integer [--classify=true]
+
+== Working with ActiveClassifier
+
+After creating the class tree you can work with the classes as with usual ActiveRecord models.
+
+  device = Device.create :vendor => 'Telsey S.r.I'
+  modem = Modem.create :vendor => 'Telsey S.r.I', :num_of_ifs => 5
+
+  modem.num_of_ifs
+  modem.num_of_ifs = 10
+
+  device.num_of_ifs # not valid - Device has no num_of_ifs attribute
+
+
+=== Class method _includes_class_
+
+If you need to select an set of the records you shall include class relations.
+
+You can do it manually:
+
+  ModemType1.includes(:attr_for_modem_type1, :attr_for_modem).all
+
+or with _includes_class_ helper
+
+  ModemType1.includes_class.all
+
+which will include self and ancestors relations.
+
+=== Class method _all_class_relations_
+
+This method returns an array of all additional attributes relation names for class.
+
+=== Class method _class_relation_
+
+This method returns the name of the _attr_for_ relation or nil if class has no additional attributes.
+
+=== Class method _attributes_class_
+
+This method returns an additional attributes class for the class or nil if class has no additional attributes.
+
+=== Class method _relation_for_field_
+
+This method returns an relation name for field or nil if class has no additional attributes or field is not exists there.
+
+=== Class method _class_for_field_
+
+This method returns the class of the field (main class or attributes class) or nil if not found.
+
+=== Class field_names_for_class
+
+This method returns an array of all field names for class.
+
+=== Class fields_for_class
+This method returns an array representation of the class fields:
+
+* first item is an array of fields comming from STI
+
+* each next item is an array [relation_name, [relation_fields] ]
