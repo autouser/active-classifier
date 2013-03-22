@@ -14,6 +14,10 @@ module Classify
           self.has_one "attr_for_#{cls.to_s.underscore}".to_sym, :class_name => "#{cls.to_s}Attribute", :foreign_key => 'class_id', :dependent => :destroy, :autosave => true
         end
       end
+
+      parent_node = self.inheritance_array.collect{|n| n.to_s}
+      child_node = parent_node.pop
+      ActiveClassifier.add_class_node(parent_node, child_node)      
     end
 
     def attributes_class
