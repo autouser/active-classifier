@@ -13,12 +13,18 @@ module Classify
       self.inheritance_queue do |cls, at|
         next unless at
 
-        attr_accessible *self.field_names_for_class.collect{|a| a.to_sym}
-        self.has_one "attr_for_#{cls.to_s.underscore}".to_sym, :class_name => "#{cls.to_s}Attribute", :foreign_key => 'class_id', :dependent => :destroy, :autosave => true
+        attr_accessible *self.field_names_for_class.collect(&:to_sym)
+
+        self.has_one "attr_for_#{cls.to_s.underscore}".to_sym, 
+          :class_name => "#{cls.to_s}Attribute",
+          :foreign_key => 'class_id',
+          :dependent => :destroy,
+          :autosave => true
       end
 
-      parent_node = self.inheritance_array.collect{|n| n.to_s}
+      parent_node = self.inheritance_array.collect(&:to_s)
       child_node = parent_node.pop
+
       ActiveClassifier.add_class_node(parent_node, child_node)
     end
 
@@ -32,20 +38,20 @@ module Classify
     end
 
     def classified?
-      @classified
+      @classified == true
     end
 
     def inheritance_array
       res = []
-      res << self.superclass.inheritance_array if self.superclass.respond_to?(:classified?)
+      res << self.superclass.inheritance_array if self.superclass && self.superclass.respond_to?(:classified?)
       res << [self]
       res.flatten
     end
 
-    def inheritance_queue(reverse=true, &block)
+    def inheritance_queue(reverse = true)
       a = self.inheritance_array
       a = a.reverse if reverse
-      a.each {|cls| yield(cls, cls.classified?) }
+      a.each {|cls| yield(cls, cls.classified?) if block_given? }
     end
 
     def all_class_relations
@@ -61,16 +67,12 @@ module Classify
         return cls if cls.columns_hash.key?(field_name.to_s)
         return cls.attributes_class if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
       end
-
-      nil
     end
 
     def relation_for_field(field_name)
       self.inheritance_queue do |cls, at|
         return cls.class_relation if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
       end
-
-      nil
     end
 
 
@@ -97,7 +99,7 @@ module Classify
     end
 
     def includes_class
-      self.includes(*self.all_class_relations.collect{|r| r.to_sym})
+      self.includes(*self.all_class_relations.collect(&:to_sym))
     end
 
   end

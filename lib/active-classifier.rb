@@ -27,6 +27,7 @@ module ActiveClassifier
     end
   end
 
+  # TODO: define only if development env variable is defined
   # Preloads all models. Useful in development mode
   def self.preload_models
     Dir[Rails.root + 'app/models/*.rb'].map {|f| File.basename(f, '.*').camelize.constantize }
