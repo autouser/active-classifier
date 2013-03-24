@@ -20,9 +20,9 @@ class ManitouClassificationTest < ActiveSupport::TestCase
 
   test "inheritance_queue" do
     a = []
-    Modem.inheritance_queue do |cls, c|
-      a << [cls, c]
-    end
+
+    Modem.inheritance_queue { |cls, c| a << [cls, c]}
+
     assert_equal [[Modem,true],[Device,true],[Item,false]], a, "should process queue in reverse order"
   end
 
