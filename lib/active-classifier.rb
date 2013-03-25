@@ -1,5 +1,6 @@
 module ActiveClassifier
 
+  @classified = {}
   @class_tree = {}
 
   def self.class_tree
@@ -31,6 +32,18 @@ module ActiveClassifier
   # Preloads all models. Useful in development mode
   def self.preload_models
     Dir[Rails.root + 'app/models/*.rb'].map {|f| File.basename(f, '.*').camelize.constantize }
+  end
+
+  def self.classified
+    @classified
+  end
+
+  def self.register_class(cls, is_classified=true)
+    @classified[cls.to_s] = is_classified
+  end
+
+  def self.classified?(cls)
+    @classified[cls.to_s]
   end
 
 end

@@ -25,3 +25,5 @@ module AttributeFor
   end
 
 end
+
+ActiveRecord::Base.send :include , AttributeFor

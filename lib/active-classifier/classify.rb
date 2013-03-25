@@ -8,7 +8,7 @@ module Classify
 
     def classify(clsf = true, args = {})
 
-      @classified = clsf
+      ActiveClassifier.register_class(self, clsf)
 
       self.inheritance_queue do |cls, at|
         next unless at
@@ -34,16 +34,16 @@ module Classify
 
 
     def classified=(value)
-      @classified = value
+      ActiveClassifier.register_class(self,value)
     end
 
     def classified?
-      @classified == true
+      ActiveClassifier.classified?(self)
     end
 
     def inheritance_array
       res = []
-      res << self.superclass.inheritance_array if self.superclass && self.superclass.respond_to?(:classified?)
+      res << self.superclass.inheritance_array if self.superclass && ActiveClassifier.classified.key?(self.superclass.to_s)
       res << [self]
       res.flatten
     end
@@ -52,6 +52,7 @@ module Classify
       a = self.inheritance_array
       a = a.reverse if reverse
       a.each {|cls| yield(cls, cls.classified?) if block_given? }
+      nil
     end
 
     def all_class_relations
@@ -71,7 +72,7 @@ module Classify
 
     def relation_for_field(field_name)
       self.inheritance_queue do |cls, at|
-        return cls.class_relation if at && cls.attributes_class.columns_hash.key?(field_name.to_s)
+        return cls.class_relation if at && field_name.to_s != 'class_id' && cls.attributes_class.columns_hash.key?(field_name.to_s)
       end
     end
 
@@ -108,7 +109,7 @@ module Classify
     match_data = method_name.to_s.match(/^(\w+)(|=)$/)
 
     if match_data && rel = self.class.relation_for_field(match_data[1])
-      attrs = self.send(rel) || self.send("build_#{rel}")
+      attrs = self.send(rel) || self.send("build_#{rel.to_s}")
       raise "#{rel} was not built" if attrs.nil?
       attrs.send(method_name, *args)
     else
@@ -126,3 +127,5 @@ module Classify
   end
 
 end
+
+ActiveRecord::Base.send :include , Classify
