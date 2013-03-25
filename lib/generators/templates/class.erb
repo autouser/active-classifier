@@ -1,11 +1,5 @@
 class <%= class_name.camelize %> < <%= options[:parent] ? options[:parent].camelize : "ActiveRecord::Base" %>
 
-  include Classify
-
-  <% unless @class_attributes.empty? %>
-  attr_accesible <%= @class_attributes.collect{|a| ":#{a[:name]}"}.join(', ') -%>
-  <% end %>
-
   <%= @macro %>
 
 end

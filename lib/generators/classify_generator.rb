@@ -38,8 +38,6 @@ class ClassifyGenerator < Rails::Generators::Base
     @macro = (options[:classify] ? "classify" : "classify false")
   end
 
-  def process_migraetion_data; end
-
   def classify
     template "class.erb", "app/models/#{class_name.underscore}.rb"
     migration_template "class_migration.erb", "db/migrate/create_#{class_name.underscore.gsub('/','_').pluralize}"

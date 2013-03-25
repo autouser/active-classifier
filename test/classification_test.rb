@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ManitouClassificationTest < ActiveSupport::TestCase
+class ClassificationTest < ActiveSupport::TestCase
 
   test "classified" do
     assert ! Item.classified?, "shouldn't be classified"
