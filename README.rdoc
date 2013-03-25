@@ -67,7 +67,7 @@ This is the classic STI. Now all subclasses of the Device class will have access
 Each node in the class tree might have additional attributes model.
 
   class Modem < Device
-
+    has_one :attr_for_modem, :class_name => 'ModemAttribute', :foreign_key => 'class_id'
   end
 
   class ModemAttribute < ActiveRecord::Base
@@ -98,12 +98,10 @@ Should be included into class
 It have one boolean optional argument. Agrument specifies if the class have an additional arguments. Default: true.
 
   class Device < ActiveRecord::Base
-    include Classify
     classify false
   end
 
   class Modem < Device
-    include Classify
     classify
   end
 
@@ -120,7 +118,6 @@ This helper adds into the class:
 Should be included into the additional attributes class
 
   class ModemAttribute < ActiveRecord::Base
-    include AttributeFor
     attribute_for
   end
 
