@@ -43,7 +43,10 @@ class ClassifyGenerator < Rails::Generators::Base
 
   def classify
     template "class.erb", "app/models/#{class_name.underscore}.rb"
-    migration_template "class_migration.erb", "db/migrate/create_#{class_name.underscore.gsub('/','_').pluralize}"
+    
+    unless options[:parent]
+      migration_template "class_migration.erb", "db/migrate/create_#{class_name.underscore.gsub('/','_').pluralize}"
+    end
 
     if options[:classify]
       template "attr_class.erb", "app/models/#{class_name.underscore}_attribute.rb"
