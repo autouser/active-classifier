@@ -14,7 +14,8 @@ class ClassifyGenerator < Rails::Generators::Base
   class_option :classify, :type => :boolean, :desc => 'is class have additional attributes?', :default => true
 
   def self.next_migration_number(path)
-    Time.now.utc.strftime("%Y%m%d%H%M%S")
+    @stamp = (@stamp ? @stamp + 1 : Time.now)
+    @stamp.utc.strftime("%Y%m%d%H%M%S")
   end
 
   def process_attributes
@@ -31,7 +32,9 @@ class ClassifyGenerator < Rails::Generators::Base
         end
       end
     end
+
     @additional_attributes.unshift(:name => 'class_id', :type => 'integer') if @additional_attributes.count{|a| a[:name] == 'class_id'} == 0
+    @class_attributes.unshift(:name => 'type', :type => 'string') if @additional_attributes.count{|a| a[:name] == 'string'} == 0
   end
 
   def process_classify_macro
@@ -42,8 +45,10 @@ class ClassifyGenerator < Rails::Generators::Base
     template "class.erb", "app/models/#{class_name.underscore}.rb"
     migration_template "class_migration.erb", "db/migrate/create_#{class_name.underscore.gsub('/','_').pluralize}"
 
-    template "attr_class.erb", "app/models/#{class_name.underscore}_attribute.rb"
-    migration_template "attr_class_migration.erb", "db/migrate/create_#{"#{class_name}Attribute".underscore.gsub('/','_').pluralize}"
+    if options[:classify]
+      template "attr_class.erb", "app/models/#{class_name.underscore}_attribute.rb"
+      migration_template "attr_class_migration.erb", "db/migrate/create_#{"#{class_name}Attribute".underscore.gsub('/','_').pluralize}"
+    end
   end
 
 end

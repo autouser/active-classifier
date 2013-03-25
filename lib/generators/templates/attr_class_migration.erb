@@ -1,4 +1,4 @@
-class Create<%= class_name.camelize %>Attribute < ActiveRecord::Migration
+class Create<%= class_name.camelize %>Attributes < ActiveRecord::Migration
   def change
     create_table(:<%= "#{class_name}Attribute".underscore.gsub('/','_').pluralize %>) do |t|
 

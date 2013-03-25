@@ -1,4 +1,4 @@
-class Create<%= class_name.camelize %> < ActiveRecord::Migration
+class Create<%= class_name.pluralize.camelize %> < ActiveRecord::Migration
   def change
     create_table(:<%= class_name.underscore.gsub('/','_').pluralize %>) do |t|
 
