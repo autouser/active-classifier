@@ -55,6 +55,10 @@ module Classify
       nil
     end
 
+    def inheritance_path(separator='.')
+      self.inheritance_array.collect {|cls| cls.to_s.underscore}.join(separator)
+    end
+
     def all_class_relations
       self.inheritance_array.collect {|cls| cls.class_relation}.compact
     end
@@ -82,7 +86,7 @@ module Classify
 
       self.inheritance_queue do |cls, at|
           flds.push(cls.column_names)
-          flds.push([cls.class_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id'}]) if at
+          flds.push([cls.attributes_class.column_names.reject {|n| n == 'class_id' || n == 'id'}]) if at
       end
 
       flds.flatten.uniq
@@ -92,11 +96,17 @@ module Classify
       shared, flds = [], []
 
       self.inheritance_queue do |cls, at|
-          shared = (shared+cls.column_names).uniq
-          flds.push([cls.class_relation, cls.attributes_class.column_names.reject{|n| n == 'class_id' || n == 'id' }]) if at
+          shared = (shared+cls.classified_fields).uniq
+          flds.push([cls.class_relation, cls.attributes_class.classified_fields]) if at
       end
 
       flds.unshift(shared)
+    end
+
+    def classified_fields
+      self.columns.reject {|c| c.name == 'class_id' || c.name == 'id' }.collect do |column|
+        {:name => column.name, :type => column.type}
+      end
     end
 
     def includes_class
@@ -124,6 +134,10 @@ module Classify
     return true if self.class.field_names_for_class.include?($1)
 
     super(name, *args)
+  end
+
+  def inheritance_path(separator='.')
+    self.class.inheritance_path(separator)
   end
 
 end

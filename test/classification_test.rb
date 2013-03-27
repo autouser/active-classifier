@@ -72,10 +72,21 @@ class ClassificationTest < ActiveSupport::TestCase
   test "fields_for_class" do
     assert_equal(
       [
-        ["id", "name", "type", "created_at", "updated_at"],
-        ["attr_for_telsey", ["mac"]],
-        ["attr_for_modem", ["num_of_ifs", "line"]],
-        ["attr_for_device", ["vendor", "issued_at"]]
+        [
+          {:name=>"name", :type=>:string},
+          {:name=>"type", :type=>:string},
+          {:name=>"created_at", :type=>:datetime},
+          {:name=>"updated_at", :type=>:datetime}
+        ],
+        ["attr_for_telsey", 
+          [{:name=>"mac", :type=>:string}]
+        ],
+        ["attr_for_modem",
+          [{:name=>"num_of_ifs", :type=>:integer}, {:name=>"line", :type=>:integer}]
+        ],
+        ["attr_for_device",
+          [{:name=>"vendor", :type=>:string}, {:name=>"issued_at", :type=>:datetime}]
+        ]
       ],
       Telsey.fields_for_class,
       "should return fields structure"
@@ -83,8 +94,8 @@ class ClassificationTest < ActiveSupport::TestCase
   end
 
   test "field_names_for_class" do
-    assert_equal ["id", "name", "type", "created_at", "updated_at", "attr_for_telsey", "mac",
-      "attr_for_modem", "num_of_ifs", "line", "attr_for_device", "vendor", "issued_at"],
+    assert_equal ["id", "name", "type", "created_at", "updated_at", "mac",
+      "num_of_ifs", "line", "vendor", "issued_at"],
       Telsey.field_names_for_class, "should return field names"
   end
 
@@ -104,6 +115,16 @@ class ClassificationTest < ActiveSupport::TestCase
     assert_equal 'Telsey S.r.I', modem.vendor, "should return additional attribute from attr_for_device"
     assert modem.attr_for_modem.nil?, "attr_for_device should be nil"
     assert_equal '00:00:00:00:00:00', modem.mac, "should return additional attribute from attr_for_telsey"
+  end
+
+  test "inheritance_path" do
+    modem = Telsey.create! :name => 'modem1', :mac => '00:00:00:00:00:00', :vendor => 'Telsey S.r.I'
+    assert_equal 'item.device.modem.dummy_modem.telsey', modem.inheritance_path, "should return valid path"
+  end
+
+  test "inheritance_path with separator" do
+    modem = Telsey.create! :name => 'modem1', :mac => '00:00:00:00:00:00', :vendor => 'Telsey S.r.I'
+    assert_equal 'item:device:modem:dummy_modem:telsey', modem.inheritance_path(':'), "should return valid path"
   end
 
 end

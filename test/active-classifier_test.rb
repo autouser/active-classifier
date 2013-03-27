@@ -8,4 +8,5 @@ class ActiveClassifierTest < ActiveSupport::TestCase
   test "class_tree" do
     assert_equal ({"Item"=>{"Device"=>{"Modem"=>{"DummyModem"=>{"Telsey"=>{}}}}}}), ActiveClassifier.class_tree, "should register class_tree"
   end
+
 end
