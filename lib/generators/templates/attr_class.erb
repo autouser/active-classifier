@@ -1,5 +1,9 @@
 class <%= class_name.camelize %>Attribute < ActiveRecord::Base
 
+<% if @additional_attributes %>
+  attr_accessible <%= @additional_attributes.collect{|a| ":"+a[:name]}.join(', ') %>
+<% end %>
+
   attribute_for
 
 end

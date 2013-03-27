@@ -1,4 +1,8 @@
 class <%= class_name.camelize %> < <%= options[:parent] ? options[:parent].camelize : "ActiveRecord::Base" %>
+  
+<% if @class_attributes %>
+  attr_accessible <%= @class_attributes.collect{|a| ":"+a[:name]}.join(', ') %>
+<% end %>
 
   <%= @macro %>
 
